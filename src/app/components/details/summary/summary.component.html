@@ -1,0 +1,77 @@
+<div class="container">
+
+<div class="row" >
+    <div class="col-sm-6">
+        <div class="d-flex justify-content-around">
+            <div class="price">
+                <table>
+                    <tr>
+                        <td>High Price:</td>
+                        <td>{{ latestPrice[0].high }}</td>
+                    </tr>
+                    <tr>
+                        <td>Low Price:</td>
+                        <td>{{ latestPrice[0].low }}</td>
+                    </tr>
+                    <tr>
+                        <td>Open Price:</td>
+                        <td>{{ latestPrice[0].open }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prev. Close:</td>
+                        <td>{{ latestPrice[0].prevClose }}</td>
+                    </tr>
+                    <tr>
+                        <td>Volume:</td>
+                        <td>{{ latestPrice[0].volume }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="price" *ngIf="marketStatus == 'open'">
+                <table>
+                    <tr>
+                        <td>Mid Price:</td>
+                        <td *ngIf="mid == null; else showMid">-</td>
+                        <ng-template #showMid>
+                            <td>{{ mid }}</td>
+                        </ng-template> 
+                    </tr>
+                    <tr>
+                        <td>Ask Price:</td>
+                        <td>{{ latestPrice[0].askPrice }}</td>
+                    </tr>
+                    <tr>
+                        <td>Ask Size:</td>
+                        <td>{{ latestPrice[0].askSize }}</td>
+                    </tr>
+                    <tr>
+                        <td>Bid Price:</td>
+                        <td>{{ latestPrice[0].bidPrice }}</td>
+                    </tr>
+                    <tr>
+                        <td>Bid Size:</td>
+                        <td>{{ latestPrice[0].bidSize }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    
+        <div> 
+            <div class="title">Company's Description</div>
+            <div class="date">Start Date: {{ descr.startDate }}</div>
+            <div>{{ descr.description }}</div>
+        </div>        
+    </div>
+
+    <div class="col-sm-6">
+        <highcharts-chart 
+            [Highcharts]="Highcharts" 
+            [constructorType]="'stockChart'" 
+            [options]="chartOptions"
+            [(update)]="updateFlag"
+            class="chart">
+        </highcharts-chart>
+    </div>
+    
+</div>
+</div>

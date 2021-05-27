@@ -1,0 +1,23 @@
+.price{
+    /* padding: 35px 20px 20px 60px; */
+    padding: 10% 3% 3% 4%;
+}
+
+.title{
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-bottom: 25px; 
+}
+
+.date{
+    margin: 15px 0;
+}
+
+.chart{
+    width: 100%; 
+    height: 400px; 
+    display: block;
+    margin: 20px 0;
+}

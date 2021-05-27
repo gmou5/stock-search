@@ -1,0 +1,32 @@
+
+.title{
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+button:focus, button:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.source{
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.details{
+    color: grey;
+    margin-bottom: 50px;
+}
+
+.share{
+    font-size: 15px;
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+
+.date{
+    color: #70777e;
+    font-size: 1rem;
+}

@@ -1,0 +1,112 @@
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">{{ ticker }}</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div style="margin: 5px 0">Current Price: {{ price }}</div>
+        <div class="row">
+            <div class="col-sm-7 d-sm-flex flex-row">
+                <label style="padding-right:7px; margin-top: 7px" for="quantity">Quantity</label>
+                <input [(ngModel)]="quantity"
+                (ngModelChange)="onChange($event)" 
+                #count type="number" 
+                class="form-control"
+                id="quantity" >  
+            </div>    
+        </div>            
+    </div>
+    <div class="modal-footer">
+        <div class="mr-auto">Total: {{ totalCost }}</div>
+        <ng-container *ngIf="button == 'buy'; else sellButton">
+            <button type="button" 
+            class="btn btn-success" 
+            (click)="buy()" 
+            [disabled]="checkValue(count.value)">Buy</button>
+        </ng-container>
+        <ng-template #sellButton>
+            <button type="button" 
+            class="btn btn-success" 
+            (click)="sell()" 
+            [disabled]="checkValue(count.value)">Sell</button>
+        </ng-template>    
+    </div>        
+</ng-template>
+
+
+
+<div style="padding-top: 40px; padding-bottom: 10px;">
+    <div class="title">My Portfolio</div>
+    <div class="spinner-padding" *ngIf="loading; else done">
+        <mat-spinner [diameter]="50" class="spinner mat-spinner-color"></mat-spinner>
+    </div>
+    <div *ngIf="empty" class="alert alert-warning" role="alert" style="text-align: center;">
+        Currently you don't have any stock.
+    </div>
+    <ng-template #done>
+        <div *ngIf="!empty">
+            <div class="card" *ngFor="let item of items" style="margin-bottom: 1.1rem;">
+                <div class="card-header" (click)="openDetails(item.ticker)">                    
+                    <div class="descr">
+                        <span class="ticker">{{ item.ticker }}</span>
+                        <span class="name">{{ item.name }}</span>
+                    </div>
+                </div>
+                <div class="card-body row" style="font-size: 1.3rem; line-height: 1.2;">
+                    <div class="col-sm-6">
+                        <div class="d-flex justify-content-between">
+                            <div>Quantity: </div>
+                            <div>{{ item.quantity }}</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Avg. Cost / Share: </div>
+                            <div>{{ item.avgCost }}</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Total Cost: </div>
+                            <div>{{ item.totalCost }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex justify-content-between">
+                            <div>Change: </div>
+                            <div class="d-flex flex-row-reverse" [ngStyle]="{'color' : item.color}">
+                                <div>{{ item.change }}</div>
+                                <ng-container *ngIf="item.color == 'green'">
+                                    <svg width="0.6em" height="0.6em" viewBox="0 0 16 16" class="bi bi-caret-up-fill" fill="green" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                    </svg>
+                                </ng-container>
+                                <ng-container *ngIf="item.color == 'red'">
+                                    <svg width="0.6em" height="0.6em" viewBox="0 0 16 16" class="bi bi-caret-down-fill" fill="red" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                    </svg>
+                                </ng-container> 
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Current Price: </div>
+                            <div [ngStyle]="{'color' : item.color}">{{ item.lastPrice }}</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Market Value: </div>
+                            <div [ngStyle]="{'color' : item.color}">{{ item.value }}</div>
+                        </div>
+                    </div>                       
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex flex-row-reverse">
+                        <button type="button" class="btn btn-danger" (click)="openModal(content, item, 'sell')">Sell</button>
+                        <button type="button" class="btn btn-primary" (click)="openModal(content, item, 'buy')">Buy</button>
+                        
+                    </div>
+                    
+                </div>                  
+            </div> 
+        </div>
+    </ng-template>       
+</div>
+
+

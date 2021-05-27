@@ -1,0 +1,31 @@
+<div class="modal-header">
+    <div class="row">
+        <div class="modal-title source col-12">{{source}}</div>
+        <div class="date col-12">{{date | date}}</div>
+    </div>    
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+    </button>    
+</div>
+<div class="modal-body">
+    <div class="title">{{title}}</div>
+    <div>{{description}}</div>
+    <div class="details">For more details click <a [href]="url" target="_blank">here</a></div>
+    <div class="card">
+        <div class="card-body">
+            <div class="share">Share</div>     
+            <a target="_blank" #twttr href="#" style="margin-right:10px; font-size:1.1rem;">
+                <fa-icon [icon]="['fab', 'twitter']" size="2x"></fa-icon>
+            </a>
+            <a target="_blank" #fb href="#" style="font-size: 1.1rem;">
+                <fa-icon [icon]="['fab', 'facebook-square']" size="2x" [style] = "{'color': '#002ef5'}"></fa-icon>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+

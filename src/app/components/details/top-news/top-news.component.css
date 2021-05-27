@@ -1,0 +1,15 @@
+
+.card{
+    border: 0;
+}
+
+.card-body{
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+    margin: 12px 0;
+    background-color: #fafafa;
+}
+
+.news-image{
+    padding-right: 0;
+}

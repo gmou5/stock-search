@@ -1,0 +1,50 @@
+button:focus, button:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+  
+.spinner-padding{
+    padding-top: 50px;
+}
+
+.spinner{
+    margin: auto;
+}
+
+.mat-spinner-color::ng-deep circle{
+    stroke: #6857f2 !important;
+}
+
+.title{
+    font-size: 2.3rem;
+    padding: 0.8rem 0;
+    margin-bottom: 2.35rem;
+}
+
+.ticker{
+    margin-bottom: 1.1rem;
+    font-size: 1.7rem;
+}
+
+.card-header {
+    padding: 0.15rem 0.45rem;
+    height: 0.5rem;
+    background-color: rgba(0, 0, 0, 0);
+    border-bottom: 0;
+}
+
+.close{
+    font-size: 1.25rem;
+}
+
+.card{
+    margin-bottom: 1.2rem;
+}
+
+.name{
+    font-size: 1.15rem;
+}
+
+svg {
+    margin: 0.2rem;
+}
