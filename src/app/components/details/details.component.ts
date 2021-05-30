@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SearchService } from '../../services/search.service';
 import { ActivatedRoute, ParamMap } from '@angular/router'
 //import { MatTabsModule } from '@angular/material/tabs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 //import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
+import { tap, switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 
 
@@ -13,21 +14,24 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class DetailsComponent implements OnInit{
+export class DetailsComponent implements OnInit, OnDestroy{
   
+  // pass to child component
   price;
   description;
   dailyPrice;
   historicalPrice;
+  timer;
 
-
+  // param
   symbol:string;
-  //symbols:string[] = [];
-
+  
+  // basic information
   ticker:string;
   name:string;
   exchangeCode:string;
 
+  // price information
   lastPrice:number;
   prevClose:number;
   change:string;
@@ -38,18 +42,18 @@ export class DetailsComponent implements OnInit{
   status:string;
   color:string;
 
-  //@ViewChild('star') star: ElementRef;
-  //@ViewChild('starFill') starFill: ElementRef;
-
+  // watchlist
   watchlist = JSON.parse(localStorage.getItem("watchlist"));
   symbolPresent:boolean;
 
+  // toast
   loading:boolean;
   addTicker:boolean = false;
   removeTicker:boolean = false;
   buyTicker:boolean = false;
   valid:boolean = true;
 
+  // portfolio
   portfolio = JSON.parse(localStorage.getItem("portfolio"));
   quantity:number = 0;
   totalCost:string = '0.00';
@@ -64,37 +68,57 @@ export class DetailsComponent implements OnInit{
   ngOnInit(): void {
     this.loading = true;
 
-    this.route.paramMap.subscribe((params: ParamMap) => {
-      this.symbol = params.get('symbol');
-      
-    })
-
-    this.searchService.getTicker(this.symbol).subscribe(data => {   // 是不是可以不嵌套这么多层
-      if(data['detail'] == 'Not found.'){
-        this.loading = false;
-        this.valid = false;
-        return;
-      }
-      this.description = data;
-      this.ticker = data['ticker'];
-      this.name = data['name'];
-      this.exchangeCode = data['exchangeCode'];
-
-      this.searchService.getPrice(this.symbol).subscribe(lastPriceData => {   // 肯定有rxjs解决的办法，不用嵌套，从而可以把getPirce封装出来
-        let time = lastPriceData[0]['timestamp'].substring(0,10);
-        this.searchService.getHistoricalData(this.symbol, time).subscribe(historicalData => {
-          //console.log('his');
-          
-          this.historicalPrice = historicalData;
-          
-        });
+      this.route.paramMap.pipe(
+        tap((params: ParamMap) => {
+          this.symbol = params.get('symbol');  
+        }),
+        switchMap((params: ParamMap) => forkJoin([
+          this.searchService.getTicker(params.get('symbol')),
+          this.searchService.getPrice(params.get('symbol'))
+        ])),
+        tap(data => {
+          this.getStockInfo(data[0])
+          this.getStockPrice(data[1])
+        }),
+        switchMap(data => {
+          let time = data[1][0]['timestamp'].substring(0,10);
+          return forkJoin([
+            this.searchService.getHistoricalData(this.symbol, time),
+            this.searchService.getDailyData(this.symbol, time)
+          ])
+        })
+      ).subscribe(priceData => {
+          this.loading = false;
+          this.dailyPrice = priceData[1];
+          this.historicalPrice = priceData[0];
+          this.getNewData()
       })
 
+  
+    this.symbolPresent= this.checkSymbol();
+  }
 
-     new Promise((resolve, reject) =>{
-      this.searchService.getPrice(this.symbol).subscribe(lastPriceData => { 
-          
-        this.price = lastPriceData; 
+  ngOnDestroy(): void {
+    if(this.timer) {
+      clearInterval(this.timer)
+    }
+  }
+
+  
+  getStockInfo(data){
+    if(data['detail'] == 'Not found.'){
+      this.loading = false;
+      this.valid = false;
+      return;
+    }
+    this.description = data;
+    this.ticker = data['ticker'];
+    this.name = data['name'];
+    this.exchangeCode = data['exchangeCode'];
+  }
+
+  getStockPrice(lastPriceData) {
+    this.price = lastPriceData; 
         
         this.lastPrice = lastPriceData[0]['last'];
         this.prevClose = lastPriceData[0]['prevClose'];
@@ -120,73 +144,27 @@ export class DetailsComponent implements OnInit{
         }
   
         this.currentTime = new Date().toISOString();
-  
-        // lasttime变化对此API有影响吗？？ 可以不嵌套吗？用ngOnChanges()，每次lastTime变化都调用此函数
-        this.searchService.getDailyData(this.symbol, this.lastTime.substring(0,10)).subscribe(dailyData => {
-          
-          this.loading = false;
-          this.dailyPrice = dailyData;
-          
-        });
 
-        resolve(this.status);
-      
-      }); 
-     }).then(data => {
-      if(data == 'open'){        
-        setInterval(() => {  // ngOnDestroy() 处理掉
-          this.getDetails(this.symbol);           
-        }, 15000);        
-      }
-     })
-      
-    });
-
-  
-    this.symbolPresent= this.checkSymbol();
   }
 
 
-  getDetails(symbol:string){
-    this.searchService.getPrice(symbol).subscribe(lastPriceData => { 
-          
-      this.price = lastPriceData; 
-      
-      this.lastPrice = lastPriceData[0]['last'];
-      this.prevClose = lastPriceData[0]['prevClose'];
-      let diff:number = this.lastPrice*100 - this.prevClose*100;
-      this.change = (diff/100).toFixed(2);
-      this.changePercentage = (diff / this.prevClose).toFixed(2); 
-      if( diff > 0 ){
-        this.color = 'green';
-      }else if(diff < 0){
-        this.color = 'red';
-      }else{
-        this.color = 'black';
-      }
-
-      this.lastTime = lastPriceData[0]['timestamp'];
-      // Date.parse()
-      let lastTimeInSec:number = new Date(`${this.lastTime.substring(0,19)}Z`).getTime();
-      let offset:number = 5*60*60*1000;
-      console.log(Date.now() - (offset + lastTimeInSec));
-      if(Date.now() - (offset + lastTimeInSec) < 60000) {
-        this.status = 'open';
-      }else{
-        this.status = 'closed';
-      }
-
-      this.currentTime = new Date().toISOString();
-
-      this.searchService.getDailyData(symbol, this.lastTime.substring(0,10)).subscribe(dailyData => {
-        this.loading = false;   
-        this.dailyPrice = dailyData;
-        
-      });
-    
-    }); 
+  getNewData() {
+    if(this.status === 'open') {
+      this.timer = setInterval(() => {  // ngOnDestroy() 处理掉
+        this.searchService.getPrice(this.symbol).pipe(
+          tap( data => {          
+            this.getStockPrice(data)
+          }),
+          switchMap( data => {
+            let time = data[0]['timestamp'].substring(0,10);
+            return this.searchService.getDailyData(this.symbol, time)
+          })
+        ).subscribe(priceData => {      
+          this.dailyPrice = priceData;          
+        })           
+      }, 15000);   
+    }
   }
-  
 
 
   add(){
